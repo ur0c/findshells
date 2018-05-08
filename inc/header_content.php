@@ -24,7 +24,7 @@
 				</tr>
 				</table>			
 			<? } else { ?>
-				<button type="button" class="btn btn-primary btn-sm dologin" title="Login">Anmelden</button>
+				<a href="/cms/login.php"><button type="button" class="btn btn-primary btn-sm" title="Login">Anmelden</button></a>
 			<? } ?>
 		</td>
 		</tr>

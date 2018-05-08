@@ -64,7 +64,8 @@ if (!empty($_SESSION['user_id'])) {
 	<script type="text/javascript">
 	
 		$(document).ready(function() {
-            $('.dologin').tooltipster({
+            	return false;
+		$('.dologin').tooltipster({
     			trigger: 'click',
     			contentAsHTML: true,
     			interactive: true,

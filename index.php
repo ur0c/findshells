@@ -113,44 +113,7 @@ include($root . 'inc/functions/get_webcontent.php');
   </head>
   <body>
   
-
-<!-- Navigation -->
-<nav class="navbar navbar-default navbar-fixed-top" style="border:0px;">
-	<div class="container-fluid">
-			
-		<table>
-		<tr>
-		<td nowrap style="padding:12px 0px 8px 2px;">
-			<a href="/index.php">
-				<span class="logo">find<img style="margin:0px 3px;" src="/img/logo_white_shell.png">shells</span><span class="logo" style="color:#fff869"><span style="padding:0px 3px;"></span>
-			</a>	
-		</td>
-		<td width="100%" align="right" style="padding-top:3px;">
-				<form class="form-inline" action="" method="post">
-					<table>
-					<tr>
-					<td style="padding-right:5px; color:#fff; font-size:14px;" nowrap>
-						<i class="fa fa-user" style="color:#fff;"></i><span class="hidden-xs">&nbsp;&nbsp;Login:</span> 
-					</td>
-					<td>
-						<div class="input-group">
-						<input name="username" id="urlname" class="form-control form-control-sm" style="height:28px; font-size:14px; width:90px; border-color:#000;" type="text" placeholder="E-Mail">	
-						<span class="input-group-btn">
-							<button type="submit" class="btn btn-default" type="button" style="height:28px; padding-top: 3px; border-color:#000;">Go</button></span>
-						</div>
-					</td>
-					</tr>
-					</table>
-				</form>
-		</td>
-		</tr>
-		</table>
-			
-	</div>
-	<!-- /.container -->
-</nav>
-
-
+        <? include($root . "inc/header_content.php"); ?>
 
 
     <div class="page-header"style="text-align:center; background-image:url('/img/p_about_beach.jpg'); background-repeat:repeat-x; margin-top:-30px; padding:130px 5px 80px 5px;">
