@@ -9,15 +9,71 @@ $nav = "index";
 include($root . 'inc/scripts/db_connection.php');
 
 
-if (!empty($_SESSION['user_id'])) {
-	if (!empty((int)$_GET['lid'])) {
-		header('Location: save_list.php?lid=' . (int)$_GET['lid']);
-		exit;
-	} else {
-		header('Location: ../home.php');
-		exit;
-	}
+// gibt es einen gueltigen key?
+if (empty($_GET['re'])) { header('Location: '.$root.'index.php'); exit; }
+$_GET['re'] = str_replace(" ", "", $_GET['re']);
+//$_GET['re'] = substr($_GET['re'], 0, 30);
+$yesterday = date('Y-m-d H:i:s', time()-86400);
+$q = "SELECT * FROM tu_reset_pass p INNER JOIN tu_user u ON p.user_id=u.id WHERE reset_key='".mysqli_real_escape_string($mysqli, $_GET['re'])."' AND p.insert_date>'".$yesterday."'";
+$result = $mysqli->query($q) or die("F2");
+if (!$row = $result->fetch_assoc()) {
+	header('Location: '.$root.'index.php'); exit;
 }
+
+
+if (isset($_POST['submit'])) {
+
+	// TODO: Email Validation
+
+	// Does the mail exist?
+	$q = "SELECT * FROM tu_user WHERE email_user='".mysqli_real_escape_string($mysqli, $_POST['username'])."'";
+	$result = $mysqli->query($q) or die("F2");
+        if ($row = $result->fetch_assoc()) { 
+
+		// Create key valid for 1 day 
+		$key = md5(time());
+		// Insert into DB
+		$q = "INSERT INTO tu_reset_pass (user_id, insert_date, reset_key) VALUES ('".$row['id']."', NOW(), '".$key."')";
+		$result = $mysqli->query($q);	
+		
+		// send mail
+		$encoding = "utf-8";
+		$mail_to = "p.weise@hotmail.com";
+		$mail_subject = "Zurücksetzen des Passworts für deinen Account bei findshells.com";
+		$mail_message = "Liebe/r Nutzer/in von findshells.com,\r\n\r\nzum Zurücksetzen Deines Passworts verwende bitte untenstehenden Link.\r\n\r\nSolltest Du das Zurücksetzen Deines Passworts nicht angefordert haben, kannst Du diese E-Mail ignorieren.\r\n\r\nhttp://www.findshells.com/cms/new_pass_2.php?re=".$key."\r\n\r\nViele Grüße von Deinem findshells.com Team!";
+		$from_name = "findshells.com";
+		$from_mail = "info@findshells.com";
+	
+		// Preferences for Subject field
+		$subject_preferences = array(
+			"input-charset" => $encoding,
+			"output-charset" => $encoding,
+			"line-length" => 76,
+			"line-break-chars" => "\r\n"
+		);
+
+		// Mail header
+		$header = "Content-type: text/plain; charset=".$encoding." \r\n";
+		$header .= "From: ".$from_name." <".$from_mail."> \r\n";
+		$header .= "MIME-Version: 1.0 \r\n";
+		$header .= "Content-Transfer-Encoding: 8bit \r\n";
+		$header .= "Date: ".date("r (T)")." \r\n";
+		$header .= iconv_mime_encode("Subject", $mail_subject, $subject_preferences);
+
+    		// Send mail
+    		mail($mail_to, $mail_subject, $mail_message, $header);
+	
+	} else {
+
+		die('df');
+
+	}
+
+
+	
+}
+
+
 
 ?>
 <!DOCTYPE html>
@@ -103,56 +159,31 @@ if (!empty($_SESSION['user_id'])) {
 
 	</script>
 
-  </head>
-  <body>
+</head>
+<body>
 
 
-  	<? include($root . 'inc/header_content.php'); ?>
+	<? include($root . 'inc/header_content.php'); ?>
     
     
-    <section class="container p-t-30">
+    	<section class="container p-t-30">
 
 		<div class="row" style="margin-top:0px;">
-		<div class="col-md-6">	  
+		<div class="col-md-12">	  
 
-			<form action="/cms/login_action.php?ref=/cms/login.php" method="post">
+			<form action="<?=$_SERVER['PHP_SELF']?>" method="post">
 			<div style="margin-top:100px;">
-				<h2 style="margin-bottom:20px;">Einloggen </h2>
-				<div style="width:300px; font-size:14px; color:#999; margin-bottom:20px;">Wenn Du schon einen Account bei findshells hast, dann logge Dich bitte ein:</div>
+				<h2 style="margin-bottom:20px;">Passwort vergessen? </h2>
+				<div style="font-size:14px; color:#999; margin-bottom:20px;">Bitte gib Deine E-Mail Adresse an und folge den Anweisungen in der Mail, um Dein Passwort zur&uuml;ckzusetzen.</div>
 				<? if (isset($_GET['login'])) { ?>
 					<div style="width:300px; font-size:14px; color:red; margin-bottom:20px;">Login fehlgeschlagen</div>
 				<? } ?>
 				<input style="width:300px" type="text" name="username" class="form-control" style="" placeholder="E-Mail" <? if (isset($_REQUEST['username'])) { echo 'value="'.$_REQUEST['username'].'"'; } ?> required>
-				<bR>
-				<input style="width:300px" type="password" name="passwd" class="form-control" style="" placeholder="Passwort" <? if (isset($_REQUEST['username'])) { echo 'autofocus'; } ?> required>
-				<br>
-				<table width="300">
-				<tr>
-				<td><input type="submit" name="submit" class="btn btn-primary" type="button" style="" value="Login"></td>
-				<td align="right"><a href="new_pass_1.php" style="font-size:13px;">Passwort vergessen?</a></td>
-				</tr>
-				</table>
-				<input type="hidden" name="getparams" value="{ 'lid': '<?=$_GET['lid']?>' }">
-			</div>
-			</form>
-
-		</div>
-
-		<div class="col-md-6">	  
-
-			<form action="/cms/register_action.php?ref=/cms/login.php" method="post">
-			<div style="margin-top:100px;">
-				<h2 style="margin-bottom:20px;">Registrieren </h2>
-				<div style="width:300px; font-size:14px; color:#999; margin-bottom:20px;">Wenn Du noch keinen Account bei findshells hast, dann registriere Dich, um Deine eigenen Listen speichern zu können:</div>
-				<? if (isset($_GET['reg'])) { ?>
-					<div style="width:300px; font-size:14px; color:red; margin-bottom:20px;">E-Mail bereits registriert</div>
-				<? } ?>
-				<input style="width:300px" type="text" name="username" class="form-control" style="" placeholder="E-Mail" required>
-				<bR>
-				<input style="width:300px" type="password" name="passwd" class="form-control" style="" placeholder="Passwort" required>
-				<bR>
-				<input type="submit" name="submit" class="btn btn-primary" type="button" style="" value="Weiter">
-				<input type="hidden" name="getparams" value="{ 'lid': '<?=$_GET['lid']?>' }">
+				<input style="width:300px" type="text" name="username" class="form-control" style="" placeholder="E-Mail" <? if (isset($_REQUEST['username'])) { echo 'value="'.$_REQUEST['username'].'"'; } ?> required>
+				<input style="width:300px" type="text" name="username" class="form-control" style="" placeholder="E-Mail" <? if (isset($_REQUEST['username'])) { echo 'value="'.$_REQUEST['username'].'"'; } ?> required>
+				
+<br>
+				<input type="submit" name="submit" class="btn btn-primary" type="button" style="" value="Neues Passwort anfordern">
 			</div>
 			</form>
 
