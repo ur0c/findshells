@@ -9,73 +9,6 @@ $nav = "index";
 include($root . 'inc/scripts/db_connection.php');
 
 
-// gibt es einen gueltigen key?
-if (empty($_GET['re'])) { header('Location: '.$root.'index.php'); exit; }
-$_GET['re'] = str_replace(" ", "", $_GET['re']);
-
-$yesterday = date('Y-m-d H:i:s', time()-86400);
-
-$q = "SELECT * FROM tu_reset_pass p INNER JOIN tu_user u ON p.user_id=u.id WHERE reset_key='".mysqli_real_escape_string($mysqli, $_GET['re'])."' AND p.insert_date>'".$yesterday."'";
-$result = $mysqli->query($q) or die("F2");
-if (!$row = $result->fetch_assoc()) {
-	header('Location: new_pass_4.php'); exit;
-} 
-
-
-if (isset($_POST['submit'])) {
-
-	// TODO: Email Validation
-
-	// Does the mail exist?
-	$q = "SELECT * FROM tu_user WHERE email_user='".mysqli_real_escape_string($mysqli, $_POST['username'])."'";
-	$result = $mysqli->query($q) or die("F2");
-        if ($row = $result->fetch_assoc()) { 
-
-		// Create key valid for 1 day 
-		$key = md5(time());
-		// Insert into DB
-		$q = "INSERT INTO tu_reset_pass (user_id, insert_date, reset_key) VALUES ('".$row['id']."', NOW(), '".$key."')";
-		$result = $mysqli->query($q);	
-		
-		// send mail
-		$encoding = "utf-8";
-		$mail_to = "p.weise@hotmail.com";
-		$mail_subject = "Zurücksetzen des Passworts für deinen Account bei findshells.com";
-		$mail_message = "Liebe/r Nutzer/in von findshells.com,\r\n\r\nzum Zurücksetzen Deines Passworts verwende bitte untenstehenden Link.\r\n\r\nSolltest Du das Zurücksetzen Deines Passworts nicht angefordert haben, kannst Du diese E-Mail ignorieren.\r\n\r\nhttp://www.findshells.com/cms/new_pass_2.php?re=".$key."\r\n\r\nViele Grüße von Deinem findshells.com Team!";
-		$from_name = "findshells.com";
-		$from_mail = "info@findshells.com";
-	
-		// Preferences for Subject field
-		$subject_preferences = array(
-			"input-charset" => $encoding,
-			"output-charset" => $encoding,
-			"line-length" => 76,
-			"line-break-chars" => "\r\n"
-		);
-
-		// Mail header
-		$header = "Content-type: text/plain; charset=".$encoding." \r\n";
-		$header .= "From: ".$from_name." <".$from_mail."> \r\n";
-		$header .= "MIME-Version: 1.0 \r\n";
-		$header .= "Content-Transfer-Encoding: 8bit \r\n";
-		$header .= "Date: ".date("r (T)")." \r\n";
-		$header .= iconv_mime_encode("Subject", $mail_subject, $subject_preferences);
-
-    		// Send mail
-    		mail($mail_to, $mail_subject, $mail_message, $header);
-	
-	} else {
-
-		die('df');
-
-	}
-
-
-	
-}
-
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -169,23 +102,15 @@ if (isset($_POST['submit'])) {
     
     	<section class="container p-t-30">
 
-		<div class="row" style="margin-top:0px;">
+		<div class="row" style="margin-top:100px;">
 		<div class="col-md-12">	  
 
-			<form action="<?=$_SERVER['PHP_SELF']?>" method="post">
-			<div style="margin-top:100px;">
-				<h2 style="margin-bottom:20px;">Passwort zur&uuml;cksetzen </h2>
-				<div style="font-size:14px; color:#999; margin-bottom:20px;">Bitte gib Deine E-Mail Adresse und Dein neues Passwort an.</div>
-				<input style="width:300px" type="text" name="username" class="form-control" style="" placeholder="E-Mail" <? if (isset($_REQUEST['username'])) { echo 'value="'.$_REQUEST['username'].'"'; } ?> required>
-				<br>
-				<input style="width:300px" type="password" name="password" class="form-control" style="" placeholder="Neues Passwort" required>
-				<br>
-				<input style="width:300px" type="password" name="password_2" class="form-control" style="" placeholder="Passwort wiederholen" reqired>
-				
-<br>
-				<input type="submit" name="submit" class="btn btn-primary" type="button" style="" value="Neues Passwort setzen">
-			</div>
-			</form>
+			<table><tr><td><i class="fa fa-check-circle" style="color:green; font-size:30px;"></i></td><td style="padding-left:15px;"><b>Wir haben eine E-Mail an die angegebene Adresse geschickt</b></td></tr></table>
+			<br><br>
+			Bitte pr&uuml;fe auch den Spam Ordner Deines Postfachs.<br>
+			Um Dein Passwort zur&uuml;ckzusetzen, folge bitte dem Link in der E-Mail. Der Link ist 24 Stunden g&uuml;ltig.
+			<br><br>
+			<a href="login.php">zurück zum Login</a>
 
 		</div>
 		</div>

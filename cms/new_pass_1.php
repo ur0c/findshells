@@ -50,6 +50,11 @@ if (isset($_POST['submit'])) {
 
     		// Send mail
     		mail($mail_to, $mail_subject, $mail_message, $header);
+		
+		header('Location: new_pass_3.php');
+		exit;
+
+
 	
 	} else {
 
