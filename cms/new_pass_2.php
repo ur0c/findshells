@@ -4,18 +4,20 @@ session_start();
 
 $root = "../";
 
+$salt="nz_o97z4nhal.83qnheo9wuehfndks&WJQH_R";
+
 $nav = "index";
 
 include($root . 'inc/scripts/db_connection.php');
 
 
 // gibt es einen gueltigen key?
-if (empty($_GET['re'])) { header('Location: '.$root.'index.php'); exit; }
-$_GET['re'] = str_replace(" ", "", $_GET['re']);
+if (empty($_REQUEST['re'])) { header('Location: '.$root.'index.php'); exit; }
+$_REQUEST['re'] = str_replace(" ", "", $_REQUEST['re']);
 
 $yesterday = date('Y-m-d H:i:s', time()-86400);
 
-$q = "SELECT * FROM tu_reset_pass p INNER JOIN tu_user u ON p.user_id=u.id WHERE reset_key='".mysqli_real_escape_string($mysqli, $_GET['re'])."' AND p.insert_date>'".$yesterday."'";
+$q = "SELECT * FROM tu_reset_pass p INNER JOIN tu_user u ON p.user_id=u.id WHERE reset_key='".mysqli_real_escape_string($mysqli, $_REQUEST['re'])."' AND p.insert_date>'".$yesterday."' AND p.used_date=0";
 $result = $mysqli->query($q) or die("F2");
 if (!$row = $result->fetch_assoc()) {
 	header('Location: new_pass_4.php'); exit;
@@ -30,43 +32,21 @@ if (isset($_POST['submit'])) {
 	$q = "SELECT * FROM tu_user WHERE email_user='".mysqli_real_escape_string($mysqli, $_POST['username'])."'";
 	$result = $mysqli->query($q) or die("F2");
         if ($row = $result->fetch_assoc()) { 
-
-		// Create key valid for 1 day 
-		$key = md5(time());
-		// Insert into DB
-		$q = "INSERT INTO tu_reset_pass (user_id, insert_date, reset_key) VALUES ('".$row['id']."', NOW(), '".$key."')";
+	
+		// Update pass 
+		$q = "UPDATE tu_reset_pass SET used_date=NOW() WHERE reset_key='".mysqli_real_escape_string($mysqli, $_POST['re'])."'";
+echo $q;
 		$result = $mysqli->query($q);	
+
+		$q = "UPDATE tu_user SET password='".md5(mysqli_real_escape_string($mysqli, $salt.$_POST['passwd']))."'";
+echo $q;
+                $result = $mysqli->query($q);
+
+		header('Location: login.php'); exit;
 		
-		// send mail
-		$encoding = "utf-8";
-		$mail_to = "p.weise@hotmail.com";
-		$mail_subject = "Zurücksetzen des Passworts für deinen Account bei findshells.com";
-		$mail_message = "Liebe/r Nutzer/in von findshells.com,\r\n\r\nzum Zurücksetzen Deines Passworts verwende bitte untenstehenden Link.\r\n\r\nSolltest Du das Zurücksetzen Deines Passworts nicht angefordert haben, kannst Du diese E-Mail ignorieren.\r\n\r\nhttp://www.findshells.com/cms/new_pass_2.php?re=".$key."\r\n\r\nViele Grüße von Deinem findshells.com Team!";
-		$from_name = "findshells.com";
-		$from_mail = "info@findshells.com";
-	
-		// Preferences for Subject field
-		$subject_preferences = array(
-			"input-charset" => $encoding,
-			"output-charset" => $encoding,
-			"line-length" => 76,
-			"line-break-chars" => "\r\n"
-		);
-
-		// Mail header
-		$header = "Content-type: text/plain; charset=".$encoding." \r\n";
-		$header .= "From: ".$from_name." <".$from_mail."> \r\n";
-		$header .= "MIME-Version: 1.0 \r\n";
-		$header .= "Content-Transfer-Encoding: 8bit \r\n";
-		$header .= "Date: ".date("r (T)")." \r\n";
-		$header .= iconv_mime_encode("Subject", $mail_subject, $subject_preferences);
-
-    		// Send mail
-    		mail($mail_to, $mail_subject, $mail_message, $header);
-	
 	} else {
 
-		die('df');
+		die('Mail does not exist.');
 
 	}
 
@@ -178,12 +158,13 @@ if (isset($_POST['submit'])) {
 				<div style="font-size:14px; color:#999; margin-bottom:20px;">Bitte gib Deine E-Mail Adresse und Dein neues Passwort an.</div>
 				<input style="width:300px" type="text" name="username" class="form-control" style="" placeholder="E-Mail" <? if (isset($_REQUEST['username'])) { echo 'value="'.$_REQUEST['username'].'"'; } ?> required>
 				<br>
-				<input style="width:300px" type="password" name="password" class="form-control" style="" placeholder="Neues Passwort" required>
+				<input style="width:300px" type="password" name="passwd" class="form-control" style="" placeholder="Neues Passwort" required>
 				<br>
 				<input style="width:300px" type="password" name="password_2" class="form-control" style="" placeholder="Passwort wiederholen" reqired>
 				
 <br>
 				<input type="submit" name="submit" class="btn btn-primary" type="button" style="" value="Neues Passwort setzen">
+				<input type="hidden" name="re" value="<?=$_REQUEST['re']?>">
 			</div>
 			</form>
 

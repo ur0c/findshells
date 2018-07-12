@@ -27,7 +27,7 @@ if (isset($_POST['passwd'])) {
 
 		
 		//$q = "SELECT * FROM tu_user WHERE id=".$_SESSION['user_id']." AND password='" . md5(mysqli_real_escape_string($mysqli, $salt.$_POST['passwd'])) . "'";
-		$q = "SELECT * FROM tu_user WHERE email='".mysqli_real_escape_string($mysqli, $_POST['username'])."' AND password='" . md5(mysqli_real_escape_string($mysqli, $salt.$_POST['passwd'])) . "'";
+		$q = "SELECT * FROM tu_user WHERE email_user='".mysqli_real_escape_string($mysqli, $_POST['username'])."' AND password='" . md5(mysqli_real_escape_string($mysqli, $salt.$_POST['passwd'])) . "'";
 		$result = $mysqli->query($q) or die("Fehler");
 		if (!$row = $result->fetch_assoc()) {
 			header('Location: ' . $_GET['ref'] . '?login=false' . str_replace("?", "&", $params));
